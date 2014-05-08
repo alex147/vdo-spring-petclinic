@@ -1,12 +1,9 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,8 +25,9 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA implementation of the ClinicService interface using EntityManager.
  * <p/>
- * <p>The mappings are defined in "orm.xml" located in the META-INF directory.
- *
+ * <p>
+ * The mappings are defined in "orm.xml" located in the META-INF directory.
+ * 
  * @author Mike Keith
  * @author Rod Johnson
  * @author Sam Brannen
@@ -44,13 +42,13 @@ public class JpaVisitRepositoryImpl implements VisitRepository {
 
 
     @Override
-    public void save(Visit visit) {
-    	if (visit.getId() == null) {
-    		this.em.persist(visit);     		
-    	}
-    	else {
-    		this.em.merge(visit);    
-    	}
+    public Visit save(Visit visit) {
+        if (visit.getId() == 0) {
+            this.em.persist(visit);
+        } else {
+            this.em.merge(visit);
+        }
+        return visit;
     }
 
 

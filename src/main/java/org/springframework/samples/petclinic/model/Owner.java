@@ -1,12 +1,9 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,16 +12,22 @@
  */
 package org.springframework.samples.petclinic.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.QueryHint;
 import javax.persistence.Table;
 import javax.validation.constraints.Digits;
 
@@ -33,9 +36,12 @@ import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.core.style.ToStringCreator;
 
+import com.vmware.vdb.compiler.jpa.EntityHint;
+import com.vmware.vdb.compiler.jpa.EntityHints;
+
 /**
  * Simple JavaBean domain object representing an owner.
- *
+ * 
  * @author Ken Krebs
  * @author Juergen Hoeller
  * @author Sam Brannen
@@ -43,7 +49,12 @@ import org.springframework.core.style.ToStringCreator;
  */
 @Entity
 @Table(name = "owners")
-public class Owner extends Person {
+@EntityHints({ @EntityHint(name = "vdb.partition", value = "true"), @EntityHint(name = "vdb.language", value = "JPA") })
+@NamedQueries({ @NamedQuery(name = "Owner.findByLastName", query = "SELECT distinct owner FROM Owner owner WHERE owner.lastName LIKE ?1", hints = { @QueryHint(name = "vdb.language", value = "JPA") }) })
+public class Owner implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Column(name = "address")
     @NotEmpty
     private String address;
@@ -57,9 +68,59 @@ public class Owner extends Person {
     @Digits(fraction = 0, integer = 10)
     private String telephone;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
-    private Set<Pet> pets;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER)
+    private List<Pet> pets;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
+
+    @Column(name = "first_name")
+    @NotEmpty
+    private String firstName;
+
+    @Column(name = "last_name")
+    @NotEmpty
+    private String lastName;
+
+    public Owner() {}
+
+    public Owner(String firstName, String lastName, String address, String city, String telephone) {
+
+        setFirstName(firstName);
+        setLastName(lastName);
+        this.address = address;
+        this.city = city;
+        this.telephone = telephone;
+    }
+
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return this.lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public boolean isNew() {
+        return (this.id == null);
+    }
 
     public String getAddress() {
         return this.address;
@@ -85,13 +146,13 @@ public class Owner extends Person {
         this.telephone = telephone;
     }
 
-    protected void setPetsInternal(Set<Pet> pets) {
+    public void setPets(List<Pet> pets) {
         this.pets = pets;
     }
 
-    protected Set<Pet> getPetsInternal() {
+    protected List<Pet> getPetsInternal() {
         if (this.pets == null) {
-            this.pets = new HashSet<Pet>();
+            this.pets = new ArrayList<Pet>();
         }
         return this.pets;
     }
@@ -109,8 +170,9 @@ public class Owner extends Person {
 
     /**
      * Return the Pet with the given name, or null if none found for this Owner.
-     *
-     * @param name to test
+     * 
+     * @param name
+     *            to test
      * @return true if pet name is already in use
      */
     public Pet getPet(String name) {
@@ -119,8 +181,9 @@ public class Owner extends Person {
 
     /**
      * Return the Pet with the given name, or null if none found for this Owner.
-     *
-     * @param name to test
+     * 
+     * @param name
+     *            to test
      * @return true if pet name is already in use
      */
     public Pet getPet(String name, boolean ignoreNew) {
@@ -141,13 +204,8 @@ public class Owner extends Person {
     public String toString() {
         return new ToStringCreator(this)
 
-                .append("id", this.getId())
-                .append("new", this.isNew())
-                .append("lastName", this.getLastName())
-                .append("firstName", this.getFirstName())
-                .append("address", this.address)
-                .append("city", this.city)
-                .append("telephone", this.telephone)
-                .toString();
+        .append("id", this.getId()).append("new", this.isNew()).append("lastName", this.getLastName())
+                .append("firstName", this.getFirstName()).append("address", this.address).append("city", this.city)
+                .append("telephone", this.telephone).toString();
     }
 }

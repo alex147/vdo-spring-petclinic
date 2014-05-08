@@ -1,12 +1,9 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,13 +18,14 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
+import org.springframework.samples.petclinic.model.Treatment;
 import org.springframework.samples.petclinic.model.Vet;
 import org.springframework.samples.petclinic.model.Visit;
 
 
 /**
  * Mostly used as a facade for all Petclinic controllers
- *
+ * 
  * @author Michael Isvy
  */
 public interface ClinicService {
@@ -46,6 +44,15 @@ public interface ClinicService {
 
     public void saveOwner(Owner owner) throws DataAccessException;
 
-    Collection<Owner> findOwnerByLastName(String lastName) throws DataAccessException;
+    public void saveVet(Vet vet) throws DataAccessException;
+
+    public void savePetType(PetType petType) throws DataAccessException;
+
+    public Collection<Owner> findOwnerByLastName(String lastName) throws DataAccessException;
+
+    public void saveTreatment(Treatment treatment) throws DataAccessException;
+
+    public Collection<Treatment> findTreatments() throws DataAccessException;
+
 
 }

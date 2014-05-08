@@ -1,12 +1,9 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,7 +32,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * A simple JDBC-based implementation of the {@link VisitRepository} interface.
- *
+ * 
  * @author Ken Krebs
  * @author Juergen Hoeller
  * @author Rob Harrop
@@ -47,29 +44,27 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcVisitRepositoryImpl implements VisitRepository {
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    private SimpleJdbcInsert insertVisit;
+    private final SimpleJdbcInsert insertVisit;
 
     @Autowired
     public JdbcVisitRepositoryImpl(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
 
-        this.insertVisit = new SimpleJdbcInsert(dataSource)
-                .withTableName("visits")
-                .usingGeneratedKeyColumns("id");
+        this.insertVisit = new SimpleJdbcInsert(dataSource).withTableName("visits").usingGeneratedKeyColumns("id");
     }
 
 
     @Override
-    public void save(Visit visit) throws DataAccessException {
+    public Visit save(Visit visit) throws DataAccessException {
         if (visit.isNew()) {
-            Number newKey = this.insertVisit.executeAndReturnKey(
-                    createVisitParameterSource(visit));
+            Number newKey = this.insertVisit.executeAndReturnKey(createVisitParameterSource(visit));
             visit.setId(newKey.intValue());
         } else {
             throw new UnsupportedOperationException("Visit update not supported");
         }
+        return visit;
     }
 
     public void deletePet(int id) throws DataAccessException {
@@ -81,29 +76,26 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
      * Creates a {@link MapSqlParameterSource} based on data values from the supplied {@link Visit} instance.
      */
     private MapSqlParameterSource createVisitParameterSource(Visit visit) {
-        return new MapSqlParameterSource()
-                .addValue("id", visit.getId())
-                .addValue("visit_date", visit.getDate().toDate())
-                .addValue("description", visit.getDescription())
-                .addValue("pet_id", visit.getPet().getId());
+        return new MapSqlParameterSource().addValue("id", visit.getId())
+                .addValue("visit_date", visit.getDate().toDate()).addValue("description", visit.getDescription());
+        // .addValue("pet_id", visit.getPet().getId());
     }
 
     @Override
     public List<Visit> findByPetId(Integer petId) {
-        final List<Visit> visits = this.jdbcTemplate.query(
-                "SELECT id, visit_date, description FROM visits WHERE pet_id=?",
-                new ParameterizedRowMapper<Visit>() {
-                    @Override
-                    public Visit mapRow(ResultSet rs, int row) throws SQLException {
-                        Visit visit = new Visit();
-                        visit.setId(rs.getInt("id"));
-                        Date visitDate = rs.getDate("visit_date");
-                        visit.setDate(new DateTime(visitDate));
-                        visit.setDescription(rs.getString("description"));
-                        return visit;
-                    }
-                },
-                petId);
+        final List<Visit> visits =
+                this.jdbcTemplate.query("SELECT id, visit_date, description FROM visits WHERE pet_id=?",
+                        new ParameterizedRowMapper<Visit>() {
+                            @Override
+                            public Visit mapRow(ResultSet rs, int row) throws SQLException {
+                                Visit visit = new Visit();
+                                visit.setId(rs.getInt("id"));
+                                Date visitDate = rs.getDate("visit_date");
+                                visit.setDate(new DateTime(visitDate));
+                                visit.setDescription(rs.getString("description"));
+                                return visit;
+                            }
+                        }, petId);
         return visits;
     }
 

@@ -1,5 +1,5 @@
+DROP database petclinic;
 CREATE DATABASE IF NOT EXISTS petclinic;
-GRANT ALL PRIVILEGES ON petclinic.* TO pc@localhost IDENTIFIED BY 'pc';
 
 USE petclinic;
 
@@ -47,8 +47,8 @@ CREATE TABLE IF NOT EXISTS pets (
   type_id INT(4) UNSIGNED NOT NULL,
   owner_id INT(4) UNSIGNED NOT NULL,
   INDEX(name),
-  FOREIGN KEY (owner_id) REFERENCES owners(id),
-  FOREIGN KEY (type_id) REFERENCES types(id)
+  FOREIGN KEY (type_id) REFERENCES types(id),
+  FOREIGN KEY (owner_id) REFERENCES owners(id)
 ) engine=InnoDB;
 
 CREATE TABLE IF NOT EXISTS visits (

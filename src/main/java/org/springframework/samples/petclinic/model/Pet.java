@@ -1,12 +1,9 @@
 /*
  * Copyright 2002-2013 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +12,7 @@
  */
 package org.springframework.samples.petclinic.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +23,9 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -36,33 +37,72 @@ import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.vmware.vdb.compiler.jpa.EntityHint;
+import com.vmware.vdb.compiler.jpa.EntityHints;
+
 /**
  * Simple business object representing a pet.
- *
+ * 
  * @author Ken Krebs
  * @author Juergen Hoeller
  * @author Sam Brannen
  */
 @Entity
 @Table(name = "pets")
-public class Pet extends NamedEntity {
+@EntityHints({ @EntityHint(name = "vdb.partition", value = "true"), @EntityHint(name = "vdb.language", value = "JPA") })
+public class Pet implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "birth_date")
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @DateTimeFormat(pattern = "yyyy/MM/dd")
     private DateTime birthDate;
 
-    @ManyToOne
-    @JoinColumn(name = "type_id")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private PetType type;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id")
     private Owner owner;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "pet", fetch = FetchType.EAGER)
     private Set<Visit> visits;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
+
+    @Column(name = "name")
+    private String name;
+
+    public Pet() {}
+
+    public Pet(String name, DateTime birthDate) {
+
+        setName(name);
+        this.birthDate = birthDate;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public boolean isNew() {
+        return (this.id == null);
+    }
 
     public void setBirthDate(DateTime birthDate) {
         this.birthDate = birthDate;
@@ -80,7 +120,7 @@ public class Pet extends NamedEntity {
         return this.type;
     }
 
-    protected void setOwner(Owner owner) {
+    public void setOwner(Owner owner) {
         this.owner = owner;
     }
 
@@ -88,7 +128,7 @@ public class Pet extends NamedEntity {
         return this.owner;
     }
 
-    protected void setVisitsInternal(Set<Visit> visits) {
+    public void setVisits(Set<Visit> visits) {
         this.visits = visits;
     }
 
@@ -108,6 +148,11 @@ public class Pet extends NamedEntity {
     public void addVisit(Visit visit) {
         getVisitsInternal().add(visit);
         visit.setPet(this);
+    }
+
+    @Override
+    public String toString() {
+        return this.getName();
     }
 
 }
