@@ -2,6 +2,7 @@ target/*
 .settings/*
 .classpath
 .project
+.gitignore
+.springBeans
 .idea
 *.iml
-.gitignore
